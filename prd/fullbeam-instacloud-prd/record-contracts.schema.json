@@ -1,0 +1,825 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Fullbeam P0 frozen-record contracts",
+  "description": "Proposed application interfaces. Schema validation does not prove task qualification, cross-record consistency, or provider integration.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/HarnessRelease"
+    },
+    {
+      "$ref": "#/$defs/Task"
+    },
+    {
+      "$ref": "#/$defs/Comparison"
+    },
+    {
+      "$ref": "#/$defs/Run"
+    }
+  ],
+  "$defs": {
+    "FileDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ]
+    },
+    "ArtifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "sha256",
+        "media_type"
+      ]
+    },
+    "HarnessRelease": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "HarnessRelease"
+        },
+        "schema_version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "adapter": {
+          "const": "codex-cli"
+        },
+        "client_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requested_model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reported_model": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mutable_model_alias": {
+          "type": "boolean"
+        },
+        "native_files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FileDigest"
+          },
+          "minItems": 1
+        },
+        "effective_settings_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "tool_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "application_runtime_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generation_image_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "permission_policy_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "agent_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "kind",
+        "schema_version",
+        "id",
+        "digest",
+        "source_commit",
+        "adapter",
+        "client_version",
+        "requested_model",
+        "reported_model",
+        "mutable_model_alias",
+        "native_files",
+        "effective_settings_sha256",
+        "tool_manifest_sha256",
+        "application_runtime_digest",
+        "generation_image_digest",
+        "permission_policy_sha256",
+        "agent_timeout_seconds"
+      ]
+    },
+    "Task": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "Task"
+        },
+        "schema_version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "repository_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository_full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issue_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pull_request_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "issue_node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pull_request_node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "link_evidence_artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "base_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "reference_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "issue_snapshot_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "prompt_cutoff": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_bundle_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "reference_patch_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "verifier_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "dependency_lock_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "application_runtime_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verifier_image_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "SEEDED_DEMO",
+            "PRIVATE_HISTORY",
+            "PUBLIC_HISTORY"
+          ]
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "PRIVATE",
+            "PUBLIC"
+          ]
+        },
+        "quality_tier": {
+          "type": "string",
+          "enum": [
+            "BRONZE",
+            "SILVER",
+            "GOLD"
+          ]
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "QUARANTINED",
+            "EXCLUDED"
+          ]
+        },
+        "history_fidelity": {
+          "type": "string",
+          "enum": [
+            "SNAPSHOT_BEFORE_SOLUTION",
+            "RECONSTRUCTED",
+            "UNKNOWN"
+          ]
+        },
+        "suite_role": {
+          "type": "string",
+          "enum": [
+            "SMOKE",
+            "REGRESSION",
+            "HOLDOUT",
+            "STRESS"
+          ]
+        },
+        "workload": {
+          "type": "string",
+          "enum": [
+            "BUGFIX",
+            "FEATURE",
+            "REFACTOR",
+            "MIGRATION",
+            "TOOLING"
+          ]
+        },
+        "risk": {
+          "type": "string",
+          "enum": [
+            "STANDARD",
+            "CRITICAL"
+          ]
+        },
+        "component": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exposure": {
+          "type": "string",
+          "enum": [
+            "KNOWN_TO_AUTHORS",
+            "USED_FOR_TUNING",
+            "UNTOUCHED_HOLDOUT",
+            "UNKNOWN"
+          ]
+        },
+        "pass_to_pass_test_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "fail_to_pass_test_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "allowed_source_prefixes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "calibration_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 0
+        },
+        "qualified_by": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "quarantine_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "AMBIGUOUS_LINK",
+              "UNSUPPORTED_HISTORY",
+              "MISSING_SNAPSHOT",
+              "SOLUTION_LEAKAGE",
+              "AMBIGUOUS_REQUIREMENT",
+              "UNREPRODUCIBLE_ENVIRONMENT",
+              "BASE_NOT_DISCRIMINATIVE",
+              "REFERENCE_FAILS",
+              "MUTANT_NOT_DISCRIMINATIVE",
+              "FLAKY_CONTROL",
+              "MISSING_TESTS",
+              "VERIFIER_DEFECT",
+              "REFERENCE_REVERTED",
+              "SCOPE_UNSUPPORTED"
+            ]
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "kind",
+        "schema_version",
+        "id",
+        "digest",
+        "repository_id",
+        "repository_full_name",
+        "issue_number",
+        "pull_request_number",
+        "issue_node_id",
+        "pull_request_node_id",
+        "link_evidence_artifact",
+        "base_sha",
+        "reference_sha",
+        "issue_snapshot_sha256",
+        "prompt_cutoff",
+        "source_bundle_sha256",
+        "reference_patch_sha256",
+        "verifier_sha256",
+        "dependency_lock_sha256",
+        "application_runtime_digest",
+        "verifier_image_digest",
+        "origin",
+        "visibility",
+        "quality_tier",
+        "disposition",
+        "history_fidelity",
+        "suite_role",
+        "workload",
+        "risk",
+        "component",
+        "exposure",
+        "pass_to_pass_test_ids",
+        "fail_to_pass_test_ids",
+        "allowed_source_prefixes",
+        "calibration_artifacts",
+        "qualified_by",
+        "quarantine_reasons"
+      ]
+    },
+    "ScheduledAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "release_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repeat": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "block_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "task_id",
+        "release_id",
+        "repeat",
+        "block_id",
+        "order"
+      ]
+    },
+    "Comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "Comparison"
+        },
+        "schema_version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_pr": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "candidate_head_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "baseline_source_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "benchmark_source_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "controller_commit_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "current_release_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "candidate_release_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "benchmark_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "trigger_actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "github_actions_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_maturity": {
+          "type": "string",
+          "enum": [
+            "PIPELINE_DEMO",
+            "EXPLORATORY_REPLAY",
+            "WORKLOAD_EVIDENCE",
+            "RELEASE_QUALIFICATION"
+          ]
+        },
+        "schedule": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ScheduledAttempt"
+          },
+          "minItems": 4
+        },
+        "release_decision": {
+          "const": "NOT_QUALIFIED_FOR_PRODUCTION"
+        }
+      },
+      "required": [
+        "kind",
+        "schema_version",
+        "id",
+        "repository_id",
+        "candidate_pr",
+        "candidate_head_sha",
+        "baseline_source_sha",
+        "benchmark_source_sha",
+        "controller_commit_sha",
+        "current_release_digest",
+        "candidate_release_digest",
+        "benchmark_digest",
+        "policy_digest",
+        "created_at",
+        "trigger_actor",
+        "github_actions_run_id",
+        "evidence_maturity",
+        "schedule",
+        "release_decision"
+      ]
+    },
+    "CheckResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "test_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "group": {
+          "type": "string",
+          "enum": [
+            "PASS_TO_PASS",
+            "FAIL_TO_PASS"
+          ]
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIP",
+            "ERROR"
+          ]
+        },
+        "evidence_artifact_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "test_id",
+        "group",
+        "outcome",
+        "evidence_artifact_id"
+      ]
+    },
+    "Usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cached_input_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "output_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "complete"
+      ]
+    },
+    "Run": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "Run"
+        },
+        "schema_version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comparison_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "release_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "block_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repeat": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "finished_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "FUNCTIONAL_FAIL",
+            "REGRESSION_FAIL",
+            "AGENT_TIMEOUT",
+            "CANDIDATE_CONFIG_ERROR",
+            "POLICY_VIOLATION",
+            "INFRA_ERROR",
+            "CANCELLED"
+          ]
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "SETUP",
+            "AGENT",
+            "CAPTURE",
+            "BUILD",
+            "VERIFY",
+            "COMPLETE"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CheckResult"
+          },
+          "minItems": 0
+        },
+        "agent_duration_ms": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "total_duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "usage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Usage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "estimated_model_cost": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rate_record_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 0
+        },
+        "environment_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "cleanup_status": {
+          "type": "string",
+          "enum": [
+            "CONFIRMED",
+            "PENDING",
+            "FAILED"
+          ]
+        },
+        "replaces_run_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "schema_version",
+        "id",
+        "comparison_id",
+        "task_digest",
+        "release_digest",
+        "block_id",
+        "repeat",
+        "started_at",
+        "finished_at",
+        "outcome",
+        "phase",
+        "reason",
+        "checks",
+        "agent_duration_ms",
+        "total_duration_ms",
+        "usage",
+        "estimated_model_cost",
+        "rate_record_artifact_id",
+        "artifacts",
+        "environment_ids",
+        "cleanup_status",
+        "replaces_run_id"
+      ]
+    }
+  }
+}

@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Fullbeam · Harness evaluations</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to dashboard</a>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Fullbeam home"
+        ><span class="brand-mark">f<span></span></span
+        ><span
+          >fullbeam<span class="brand-caption">PRIVATE EVALUATIONS</span></span
+        ></a
+      >
+      <div class="workspace-label">WORKSPACE</div>
+      <nav aria-label="Main navigation">
+        <a href="#overview" class="nav-link active" data-nav="overview"
+          ><span aria-hidden="true">◫</span> Overview</a
+        >
+        <a href="#history" class="nav-link" data-nav="history"
+          ><span aria-hidden="true">☷</span> Run history
+          <span id="nav-count" class="nav-count">—</span></a
+        >
+        <a href="#comparison" class="nav-link" data-nav="comparison"
+          ><span aria-hidden="true">⇄</span> Compare runs</a
+        >
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-status">
+          <span class="status-dot"></span> Local control plane
+        </div>
+        <p>Private repository.<br />Independent verification.</p>
+        <a
+          id="repository-link"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Repository ↗</a
+        >
+      </div>
+    </aside>
+    <div class="app-shell">
+      <header class="topbar">
+        <span class="breadcrumb">Workspace <span>/</span> Evaluations</span
+        ><span id="connection" class="connection"
+          ><span class="status-dot"></span> Connecting…</span
+        >
+      </header>
+      <main id="main" tabindex="-1">
+        <section id="overview" aria-labelledby="page-title">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">OBSERVE. COMPARE. IMPROVE.</div>
+              <h1 id="page-title">Harness performance</h1>
+              <p>See what changes when you change the model or the harness.</p>
+            </div>
+            <div class="actions">
+              <button
+                id="refresh"
+                class="button button-secondary"
+                type="button"
+              >
+                <span aria-hidden="true">↻</span> Refresh</button
+              ><button id="new-run" class="button button-primary" type="button">
+                <span aria-hidden="true">＋</span> New evaluation
+              </button>
+            </div>
+          </div>
+          <div id="global-message" role="status" aria-live="polite"></div>
+          <div
+            id="infrastructure-status"
+            class="infrastructure-status"
+            aria-live="polite"
+          ></div>
+          <div id="queued-jobs" aria-live="polite"></div>
+          <div id="scope-note" class="scope-note">
+            Loading your repository and recorded evaluations…
+          </div>
+          <div
+            id="metrics"
+            class="metric-grid"
+            aria-label="Evaluation overview"
+          ></div>
+          <div class="chart-grid">
+            <section class="card">
+              <div class="card-heading">
+                <div>
+                  <h2>Success over time</h2>
+                  <p>Candidate attempts passing independent verification</p>
+                </div>
+                <span class="legend"
+                  ><i class="legend-dot purple"></i> Pass rate</span
+                >
+              </div>
+              <div id="history-chart" class="chart-container"></div>
+            </section>
+            <section class="card">
+              <div class="card-heading">
+                <div>
+                  <h2>Model usage</h2>
+                  <p>Measured tokens across loaded reports</p>
+                </div>
+                <span class="subtle-label">TOKENS</span>
+              </div>
+              <div id="usage-chart" class="chart-container"></div>
+            </section>
+          </div>
+        </section>
+        <section
+          id="model-summary"
+          class="section"
+          aria-labelledby="model-summary-title"
+        >
+          <div class="section-heading">
+            <div>
+              <h2 id="model-summary-title">Candidate models</h2>
+              <p>
+                Observed candidate attempts, grouped by their frozen model ID.
+              </p>
+            </div>
+          </div>
+          <div class="card table-card">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>Passes</th>
+                    <th>Input tokens</th>
+                    <th>Output tokens</th>
+                    <th>Input cost</th>
+                    <th>Output cost</th>
+                    <th>Total estimate</th>
+                  </tr>
+                </thead>
+                <tbody id="model-table"></tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              Loaded evidence only · Cached tokens are a subset of input · Costs
+              are estimates in USD.
+            </div>
+          </div>
+        </section>
+        <section id="history" class="section" aria-labelledby="history-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="history-title">
+                Evaluation runs
+                <span id="history-count" class="count-badge">0</span>
+              </h2>
+              <p>Every row is a real GitHub Actions run.</p>
+            </div>
+            <div class="filters">
+              <label class="sr-only" for="run-search">Search runs</label
+              ><input
+                id="run-search"
+                type="search"
+                placeholder="Search run, model, or status…"
+              /><label class="sr-only" for="status-filter">Filter runs</label
+              ><select id="status-filter">
+                <option value="all">All statuses</option>
+                <option value="active">In progress</option>
+                <option value="complete">Completed</option>
+                <option value="failed">Needs attention</option>
+              </select>
+            </div>
+          </div>
+          <div class="card table-card">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Evaluation</th>
+                    <th scope="col">Configuration</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Candidate results</th>
+                    <th scope="col">Model cost</th>
+                    <th scope="col">Started</th>
+                    <th scope="col"><span class="sr-only">Open</span></th>
+                  </tr>
+                </thead>
+                <tbody id="run-table"></tbody>
+              </table>
+            </div>
+            <div id="history-footer" class="table-footer"></div>
+          </div>
+        </section>
+        <section
+          id="run-detail"
+          class="section"
+          aria-labelledby="detail-title"
+          hidden
+        ></section>
+        <section
+          id="comparison"
+          class="section"
+          aria-labelledby="comparison-title"
+        >
+          <div class="section-heading">
+            <div>
+              <div class="eyebrow">CHANGE WITH EVIDENCE</div>
+              <h2 id="comparison-title">Compare across evaluations</h2>
+              <p>
+                Compare candidate results on shared tasks. Counts stay visible
+                beside every rate.
+              </p>
+            </div>
+          </div>
+          <div class="card comparison-card">
+            <div class="compare-controls">
+              <label
+                >Evaluation<select id="compare-selected">
+                  <option value="">Select a completed report</option>
+                </select></label
+              ><span class="versus">vs</span
+              ><label
+                >Compare with<select id="compare-reference">
+                  <option value="all">All other historical reports</option>
+                </select></label
+              ><button
+                id="compare-button"
+                class="button button-secondary"
+                type="button"
+              >
+                Compare →
+              </button>
+            </div>
+            <div id="comparison-results" class="empty-state compact">
+              <span class="empty-icon" aria-hidden="true">⇄</span>
+              <h3>Make the next change measurable</h3>
+              <p>
+                Select an evaluation to compare task outcomes, cost, and token
+                usage with previous runs.
+              </p>
+            </div>
+          </div>
+        </section>
+        <footer class="footer">
+          <span
+            ><span class="status-dot"></span> Private evidence · Real
+            executions</span
+          ><span
+            >Seeded SMOKE benchmark · Results are not production approval</span
+          >
+        </footer>
+      </main>
+    </div>
+    <dialog id="run-dialog" aria-labelledby="new-run-title">
+      <form id="run-form">
+        <div class="drawer-heading">
+          <div>
+            <div class="eyebrow">NEW EVALUATION</div>
+            <h2 id="new-run-title">Try your next configuration</h2>
+          </div>
+          <button
+            id="close-dialog"
+            class="icon-button"
+            type="button"
+            aria-label="Close new evaluation"
+          >
+            ✕
+          </button>
+        </div>
+        <p class="drawer-intro">
+          Run both configurations against the same private tasks in fresh
+          environments.
+        </p>
+        <div class="segmented-control" aria-label="Evaluation source">
+          <button
+            type="button"
+            class="active"
+            data-mode="new"
+            aria-pressed="true"
+          >
+            New configuration</button
+          ><button type="button" data-mode="existing" aria-pressed="false">
+            Existing pull request
+          </button>
+        </div>
+        <div id="new-config-fields">
+          <label class="field-label" for="proposal-name">Evaluation name</label
+          ><input
+            id="proposal-name"
+            name="name"
+            pattern="[a-z0-9][a-z0-9-]{0,62}"
+            maxlength="63"
+            placeholder="reasoning-high"
+          />
+          <p class="field-hint">
+            A lowercase name for its versioned harness pull request.
+          </p>
+          <div class="form-grid">
+            <div>
+              <label class="field-label" for="model-select">Model</label
+              ><select id="model-select" name="model">
+                <option value="">Loading available models…</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="effort-select"
+                >Reasoning effort</label
+              ><select id="effort-select" name="reasoningEffort"></select>
+            </div>
+          </div>
+          <p id="model-note" class="field-hint"></p>
+          <details class="edit-section">
+            <summary>
+              <span>Instructions & skills</span
+              ><span class="subtle-label">OPTIONAL</span>
+            </summary>
+            <p class="field-hint">
+              Edit native harness files. Only changed files are included in the
+              proposal.
+            </p>
+            <div id="harness-load-status" class="field-hint"></div>
+            <label class="field-label" for="instructions">AGENTS.md</label
+            ><textarea
+              id="instructions"
+              rows="7"
+              spellcheck="false"
+              placeholder="Loading current repository instructions…"
+            ></textarea
+            ><label class="field-label" for="skills-index"
+              >skills.md · human skill index</label
+            ><textarea
+              id="skills-index"
+              rows="5"
+              spellcheck="false"
+              placeholder="Loading current skill index…"
+            ></textarea>
+            <div class="field-row">
+              <label class="field-label" for="skill-file"
+                >Native skill file</label
+              ><button id="add-skill" type="button" class="text-button">
+                ＋ Add file
+              </button>
+            </div>
+            <select id="skill-file">
+              <option value="">Select a skill file</option></select
+            ><textarea
+              id="skill-content"
+              rows="8"
+              spellcheck="false"
+              placeholder="Choose a native skill to edit its contents."
+              disabled
+            ></textarea>
+            <div id="new-skill-fields" hidden>
+              <label class="field-label" for="new-skill-path"
+                >New skill path</label
+              ><input
+                id="new-skill-path"
+                placeholder=".agents/skills/verify/SKILL.md"
+              /><button
+                id="confirm-skill"
+                type="button"
+                class="button button-secondary small"
+              >
+                Add to editor
+              </button>
+            </div>
+            <p class="field-hint">
+              Codex discovers <code>.agents/skills/&lt;name&gt;/SKILL.md</code>.
+              Keep its name and description frontmatter.
+            </p>
+          </details>
+        </div>
+        <div id="existing-pr-fields" hidden>
+          <label class="field-label" for="existing-pr"
+            >Harness pull request number</label
+          ><input
+            id="existing-pr"
+            type="number"
+            min="1"
+            step="1"
+            placeholder="12"
+          />
+          <p class="field-hint">
+            Evaluate the exact current head of an existing harness-only pull
+            request in this repository.
+          </p>
+        </div>
+        <div class="run-notice">
+          <span aria-hidden="true">↗</span>
+          <p>
+            This starts a real GitHub Actions workflow and uses your configured
+            model API. Model and cloud usage may incur charges.
+          </p>
+        </div>
+        <div id="form-error" role="alert" class="form-error" hidden></div>
+        <div class="drawer-footer">
+          <span id="form-summary">Current permissions are preserved.</span
+          ><button id="submit-run" class="button button-primary" type="submit">
+            Start evaluation →
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

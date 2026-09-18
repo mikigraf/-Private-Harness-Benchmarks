@@ -1,0 +1,50 @@
+{
+  "name": "fullbeam-compare",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"const fs=require('node:fs');fs.cpSync('src/dashboard/public','dist/src/dashboard/public',{recursive:true});fs.cpSync('migrations','dist/migrations',{recursive:true})\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "fullbeam": "tsx src/cli.ts",
+    "setup": "tsx src/cli.ts setup",
+    "doctor": "tsx src/cli.ts doctor",
+    "demo": "tsx src/cli.ts demo",
+    "compare": "tsx src/cli.ts compare",
+    "cleanup": "tsx src/cli.ts cleanup",
+    "test:live": "tsx src/cli.ts verify-live",
+    "format": "prettier --write src tests docs README.md tsconfig.json vitest.config.ts templates/workflows templates/actions runtime/supervisor.mjs",
+    "format:check": "prettier --check src tests docs README.md tsconfig.json vitest.config.ts templates/workflows templates/actions runtime/supervisor.mjs",
+    "start": "tsx src/cli.ts dashboard",
+    "dashboard": "tsx src/cli.ts dashboard",
+    "demo:dashboard": "tsx src/cli.ts dashboard --prepare-demo"
+  },
+  "dependencies": {
+    "@actions/artifact": "6.2.1",
+    "@iarna/toml": "2.2.5",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "commander": "14.0.1",
+    "dotenv": "17.2.3",
+    "esbuild": "0.25.12",
+    "fastify": "5.12.5",
+    "fflate": "0.8.3",
+    "insta": "0.1.0",
+    "libsodium-wrappers": "0.7.15",
+    "pg": "8.23.0",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@types/libsodium-wrappers": "0.7.14",
+    "@types/node": "24.10.1",
+    "@types/pg": "8.23.1",
+    "prettier": "3.9.8",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}

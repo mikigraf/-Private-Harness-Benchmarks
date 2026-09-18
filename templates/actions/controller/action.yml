@@ -1,0 +1,5 @@
+name: Fullbeam trusted controller
+description: Run the protected controller with GitHub's job-scoped artifact runtime.
+runs:
+  using: node24
+  main: index.cjs

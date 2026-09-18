@@ -1,0 +1,6 @@
+# Native example policy. Verify support in the pinned CLI during preflight.
+# The trusted controller supplies and freezes an available model explicitly.
+# Do not put provider credentials or Instacloud/GitHub tokens here.
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+web_search = "disabled"
