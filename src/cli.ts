@@ -24,6 +24,7 @@ import { renderReport, validateReportIdentity } from "./product/report.js";
 import { RemoteController } from "./product/remote.js";
 import { createHarnessProposal } from "./product/harness.js";
 import { exportHarness } from "./product/harness-export.js";
+import { startDashboard } from "./dashboard/server.js";
 import { setupDatabase } from "./product/database-setup.js";
 import type {
   PublishedReport,
@@ -44,6 +45,33 @@ const integer = (value: string) => {
     throw new Error("Expected a positive integer");
   return n;
 };
+program
+  .command("dashboard")
+  .description("Open the connected repository's real evaluation dashboard")
+  .option("--port <port>", "Local dashboard port", integer, 4318)
+  .option("--prepare-demo", "Prepare and qualify the owned demo if needed")
+  .action(async (options) => {
+    if (options.port > 65535) throw new Error("Port must be at most 65535");
+    let config = await setupDatabase(loadConfig());
+    if (options.prepareDemo) {
+      config = { ...config, repository: config.demoRepository };
+      const result = await setupProduct(config);
+      if (!result.state.qualified)
+        await demo(
+          { ...config, repository: config.demoRepository },
+          { automated: true },
+        );
+    }
+    const app = await startDashboard(config, options.port);
+    console.log(
+      `Fullbeam dashboard: http://127.0.0.1:${options.port}\nConnected repository: ${config.repository}\nCredentials remain in the root .env. Press Ctrl+C to stop.`,
+    );
+    const close = async () => {
+      await app.close();
+    };
+    process.once("SIGINT", close);
+    process.once("SIGTERM", close);
+  });
 function recoveryConfig(): RecoveryConfig {
   const env = readEnvironment();
   const map = {
