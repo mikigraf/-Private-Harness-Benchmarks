@@ -1,0 +1,143 @@
+{
+  "status": "synthetic_acceptance_fixtures_not_model_results",
+  "cases": [
+    {
+      "id": "repeated-regression",
+      "current": [
+        "PASS",
+        "PASS"
+      ],
+      "candidate": [
+        "FUNCTIONAL_FAIL",
+        "FUNCTIONAL_FAIL"
+      ],
+      "finding": "REGRESSION_OBSERVED"
+    },
+    {
+      "id": "repeated-improvement",
+      "current": [
+        "FUNCTIONAL_FAIL",
+        "FUNCTIONAL_FAIL"
+      ],
+      "candidate": [
+        "PASS",
+        "PASS"
+      ],
+      "finding": "IMPROVEMENT_OBSERVED"
+    },
+    {
+      "id": "all-pass",
+      "current": [
+        "PASS",
+        "PASS"
+      ],
+      "candidate": [
+        "PASS",
+        "PASS"
+      ],
+      "finding": "NO_DIFFERENCE_OBSERVED"
+    },
+    {
+      "id": "shared-failure",
+      "current": [
+        "FUNCTIONAL_FAIL",
+        "FUNCTIONAL_FAIL"
+      ],
+      "candidate": [
+        "FUNCTIONAL_FAIL",
+        "FUNCTIONAL_FAIL"
+      ],
+      "finding": "SHARED_FAILURE"
+    },
+    {
+      "id": "candidate-variable",
+      "current": [
+        "PASS",
+        "PASS"
+      ],
+      "candidate": [
+        "PASS",
+        "FUNCTIONAL_FAIL"
+      ],
+      "finding": "VARIABLE"
+    },
+    {
+      "id": "baseline-variable",
+      "current": [
+        "PASS",
+        "FUNCTIONAL_FAIL"
+      ],
+      "candidate": [
+        "PASS",
+        "PASS"
+      ],
+      "finding": "VARIABLE"
+    },
+    {
+      "id": "infra-incomplete",
+      "current": [
+        "PASS",
+        "PASS"
+      ],
+      "candidate": [
+        "PASS",
+        "INFRA_ERROR"
+      ],
+      "finding": "INCOMPLETE"
+    },
+    {
+      "id": "cancelled-incomplete",
+      "current": [
+        "PASS",
+        "PASS"
+      ],
+      "candidate": [
+        "CANCELLED",
+        "PASS"
+      ],
+      "finding": "INCOMPLETE"
+    },
+    {
+      "id": "budget-regression",
+      "current": [
+        "PASS",
+        "PASS"
+      ],
+      "candidate": [
+        "AGENT_TIMEOUT",
+        "AGENT_TIMEOUT"
+      ],
+      "finding": "REGRESSION_OBSERVED"
+    },
+    {
+      "id": "config-regression",
+      "current": [
+        "PASS",
+        "PASS"
+      ],
+      "candidate": [
+        "CANDIDATE_CONFIG_ERROR",
+        "CANDIDATE_CONFIG_ERROR"
+      ],
+      "finding": "REGRESSION_OBSERVED"
+    },
+    {
+      "id": "protected-path-regression",
+      "current": [
+        "PASS",
+        "PASS"
+      ],
+      "candidate": [
+        "POLICY_VIOLATION",
+        "POLICY_VIOLATION"
+      ],
+      "finding": "REGRESSION_OBSERVED"
+    }
+  ],
+  "release_decision_for_every_case": "NOT_QUALIFIED_FOR_PRODUCTION",
+  "notes": [
+    "A regression finding must display whether losses were functional, budget, configuration, or policy failures.",
+    "These fixtures exercise reporting logic only; they are not evidence that a model passed or failed.",
+    "Any missing scheduled observation yields INCOMPLETE before applying the pass-count cases."
+  ]
+}

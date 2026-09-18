@@ -1,0 +1,150 @@
+schema_version: 1
+status: proposed_fullbeam_contract_not_observed_results
+dimensions:
+  origin:
+  - SEEDED_DEMO
+  - PRIVATE_HISTORY
+  - PUBLIC_HISTORY
+  visibility:
+  - PRIVATE
+  - PUBLIC
+  quality_tier:
+  - BRONZE
+  - SILVER
+  - GOLD
+  disposition:
+  - ACTIVE
+  - QUARANTINED
+  - EXCLUDED
+  history_fidelity:
+  - SNAPSHOT_BEFORE_SOLUTION
+  - RECONSTRUCTED
+  - UNKNOWN
+  suite_role:
+  - SMOKE
+  - REGRESSION
+  - HOLDOUT
+  - STRESS
+  workload:
+  - BUGFIX
+  - FEATURE
+  - REFACTOR
+  - MIGRATION
+  - TOOLING
+  risk:
+  - STANDARD
+  - CRITICAL
+  exposure:
+  - KNOWN_TO_AUTHORS
+  - USED_FOR_TUNING
+  - UNTOUCHED_HOLDOUT
+  - UNKNOWN
+  evidence_maturity:
+  - PIPELINE_DEMO
+  - EXPLORATORY_REPLAY
+  - WORKLOAD_EVIDENCE
+  - RELEASE_QUALIFICATION
+  component_observation:
+  - 'YES'
+  - 'NO'
+  - UNKNOWN
+quality_requirements:
+  BRONZE:
+  - recorded_issue_pr_provenance
+  SILVER:
+  - recorded_issue_pr_provenance
+  - base_environment_runs
+  - reference_environment_runs
+  GOLD:
+  - reviewed_unambiguous_requirement
+  - recorded_issue_pr_provenance
+  - immutable_base_and_reference
+  - solution_free_generation_bundle
+  - reviewed_requirement_assertion_mapping
+  - frozen_expected_test_ids
+  - base_p2p_passes_f2p_fails_semantically_twice
+  - reference_all_required_checks_pass_twice
+  - compiling_plausible_mutant_rejected_semantically_twice
+  - native_runtime_and_verifier_digests_recorded
+  - qualification_approval_recorded
+scored_case_rule: quality_tier == GOLD and disposition == ACTIVE and calibration_digests_match
+quarantine_reasons:
+- AMBIGUOUS_LINK
+- UNSUPPORTED_HISTORY
+- MISSING_SNAPSHOT
+- SOLUTION_LEAKAGE
+- AMBIGUOUS_REQUIREMENT
+- UNREPRODUCIBLE_ENVIRONMENT
+- BASE_NOT_DISCRIMINATIVE
+- REFERENCE_FAILS
+- MUTANT_NOT_DISCRIMINATIVE
+- FLAKY_CONTROL
+- MISSING_TESTS
+- VERIFIER_DEFECT
+- REFERENCE_REVERTED
+- SCOPE_UNSUPPORTED
+github_labels:
+  fullbeam:eval-candidate: Request curated task intake; does not certify quality.
+  fullbeam:eval-exclude: Request explicit exclusion with a recorded reason.
+  fullbeam:compare: Maintainer comparison request after the automatic trigger is implemented.
+  fullbeam:seeded-demo: Disclose deliberately authored demo history.
+  area:tenant-isolation: Behavioral component tag.
+  area:idempotency: Behavioral component tag.
+  area:pagination: Behavioral component tag.
+  risk:critical: Owner-designated critical guardrail; not a security-certification
+    label.
+run_outcomes:
+  PASS:
+    quality_denominator: true
+    success: true
+  FUNCTIONAL_FAIL:
+    quality_denominator: true
+    success: false
+  REGRESSION_FAIL:
+    quality_denominator: true
+    success: false
+  AGENT_TIMEOUT:
+    quality_denominator: true
+    success: false
+  CANDIDATE_CONFIG_ERROR:
+    quality_denominator: true
+    success: false
+  POLICY_VIOLATION:
+    quality_denominator: true
+    success: false
+  INFRA_ERROR:
+    quality_denominator: false
+    success: false
+  CANCELLED:
+    quality_denominator: false
+    success: false
+task_findings:
+- REGRESSION_OBSERVED
+- IMPROVEMENT_OBSERVED
+- NO_DIFFERENCE_OBSERVED
+- SHARED_FAILURE
+- VARIABLE
+- INCOMPLETE
+execution_completeness:
+- COMPLETE
+- INCOMPLETE
+advisories:
+- INVESTIGATE_REGRESSION
+- COLLECT_MORE_EVIDENCE
+- REPAIR_BENCHMARK_OR_INFRASTRUCTURE
+p0_release_decision: NOT_QUALIFIED_FOR_PRODUCTION
+p0_defaults:
+  origin: SEEDED_DEMO
+  visibility: PRIVATE
+  quality_tier_before_calibration: BRONZE
+  suite_role: SMOKE
+  workload: BUGFIX
+  exposure: KNOWN_TO_AUTHORS
+  evidence_maturity: PIPELINE_DEMO
+  target_distinct_tasks: 3
+  minimum_distinct_tasks: 1
+  attempts_per_task_per_release: 2
+  max_parallel_pipelines: 2
+  agent_timeout_seconds: 240
+  grader_timeout_seconds: 120
+  control_repeats_per_type: 2
