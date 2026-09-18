@@ -1,0 +1,229 @@
+name: Fullbeam comparison
+run-name: Fullbeam ${{ inputs.operation }} ${{ inputs.trigger_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Trusted controller operation
+        type: choice
+        required: true
+        options:
+          - compare
+          - qualify
+      candidate_pr:
+        description: Candidate PR number (compare only)
+        type: string
+        required: false
+      trigger_id:
+        description: Unique immutable trigger identifier
+        type: string
+        required: true
+      previous_id:
+        description: Previous comparison ID for an explicit rerun (compare only)
+        type: string
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fullbeam-${{ github.repository_id }}-${{ inputs.trigger_id }}
+  cancel-in-progress: false
+
+jobs:
+  controller:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.repository.fork == false &&
+      github.event.repository.full_name == github.repository &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      issues: read
+      checks: read
+    outputs:
+      publication_exists: ${{ steps.publication.outputs.exists }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: .fullbeam/controller
+    steps:
+      - name: Check out the dispatched protected commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: "false"
+          fetch-depth: "1"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: .fullbeam/controller/package-lock.json
+
+      - name: Install the protected controller without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Validate trusted runtime lock
+        run: test -f ../../.fullbeam/runtime.lock.json
+
+      - name: Run trusted controller
+        id: controller
+        uses: ./.fullbeam/controller/templates/actions/controller
+        env:
+          FULLBEAM_OPERATION: ${{ inputs.operation }}
+          FULLBEAM_CANDIDATE_PR: ${{ inputs.candidate_pr }}
+          FULLBEAM_TRIGGER_ID: ${{ inputs.trigger_id }}
+          FULLBEAM_PREVIOUS_ID: ${{ inputs.previous_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FULLBEAM_INSTACLOUD_API_TOKEN: ${{ secrets.FULLBEAM_INSTACLOUD_API_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          INSTA_ORG_ID: ${{ vars.INSTA_ORG_ID }}
+          FULLBEAM_INSTACLOUD_REGION: ${{ vars.FULLBEAM_INSTACLOUD_REGION }}
+          FULLBEAM_MODEL: ${{ vars.FULLBEAM_MODEL }}
+          FULLBEAM_REASONING_EFFORT: ${{ vars.FULLBEAM_REASONING_EFFORT }}
+          FULLBEAM_INPUT_USD_PER_MILLION: ${{ vars.FULLBEAM_INPUT_USD_PER_MILLION }}
+          FULLBEAM_CACHED_INPUT_USD_PER_MILLION: ${{ vars.FULLBEAM_CACHED_INPUT_USD_PER_MILLION }}
+          FULLBEAM_OUTPUT_USD_PER_MILLION: ${{ vars.FULLBEAM_OUTPUT_USD_PER_MILLION }}
+          FULLBEAM_MAX_MODEL_COST_USD: ${{ vars.FULLBEAM_MAX_MODEL_COST_USD }}
+          FULLBEAM_MODEL_RATES_JSON: ${{ vars.FULLBEAM_MODEL_RATES_JSON }}
+
+      - name: Detect publication output
+        id: publication
+        if: ${{ always() }}
+        run: |
+          if [[ -f .fullbeam-state/publication/publication.json ]]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload private evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fullbeam-evidence-${{ github.run_id }}
+          path: .fullbeam/controller/.fullbeam-state/evidence/
+          if-no-files-found: error
+          overwrite: "false"
+          retention-days: "30"
+          include-hidden-files: "true"
+
+      - name: Upload safe publication payload
+        if: ${{ always() && steps.publication.outputs.exists == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fullbeam-publication-${{ github.run_id }}
+          path: .fullbeam/controller/.fullbeam-state/publication/publication.json
+          if-no-files-found: error
+          overwrite: "false"
+          retention-days: "30"
+          include-hidden-files: "true"
+
+      - name: Upload qualification output
+        if: ${{ always() && hashFiles('.fullbeam/controller/.fullbeam-state/qualification/**') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fullbeam-qualification-${{ github.run_id }}
+          path: .fullbeam/controller/.fullbeam-state/qualification/
+          if-no-files-found: error
+          overwrite: "false"
+          retention-days: "30"
+          include-hidden-files: "true"
+
+  publish:
+    needs: controller
+    if: >-
+      always() &&
+      needs.controller.outputs.publication_exists == 'true' &&
+      github.event.repository.fork == false &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: .fullbeam/controller
+    steps:
+      - name: Check out the same protected controller commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: "false"
+          fetch-depth: "1"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: .fullbeam/controller/package-lock.json
+
+      - name: Install the protected publisher without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Download safe publication payload
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: fullbeam-publication-${{ github.run_id }}
+          path: .fullbeam/controller/.fullbeam-state/publication
+
+      - name: Publish report against its exact recorded head
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FULLBEAM_PUBLICATION_FILE: .fullbeam-state/publication/publication.json
+        run: npm run fullbeam -- publish --file "$FULLBEAM_PUBLICATION_FILE"
+
+  cleanup:
+    needs: controller
+    if: >-
+      always() &&
+      github.event.repository.fork == false &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    defaults:
+      run:
+        shell: bash
+        working-directory: .fullbeam/controller
+    steps:
+      - name: Check out the same protected controller commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: "false"
+          fetch-depth: "1"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: .fullbeam/controller/package-lock.json
+
+      - name: Install the protected cleanup controller without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Recover resources from this run
+        env:
+          FULLBEAM_RUN_ID: ${{ github.run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FULLBEAM_INSTACLOUD_API_TOKEN: ${{ secrets.FULLBEAM_INSTACLOUD_API_TOKEN }}
+          INSTA_ORG_ID: ${{ vars.INSTA_ORG_ID }}
+          FULLBEAM_INSTACLOUD_REGION: ${{ vars.FULLBEAM_INSTACLOUD_REGION }}
+        run: npm run fullbeam -- recover --run-id "$FULLBEAM_RUN_ID"

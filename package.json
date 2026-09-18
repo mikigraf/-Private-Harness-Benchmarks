@@ -9,7 +9,16 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "fullbeam": "tsx src/cli.ts",
+    "setup": "tsx src/cli.ts setup",
+    "doctor": "tsx src/cli.ts doctor",
+    "demo": "tsx src/cli.ts demo",
+    "compare": "tsx src/cli.ts compare",
+    "cleanup": "tsx src/cli.ts cleanup",
+    "test:live": "tsx src/cli.ts verify-live",
+    "format": "prettier --write src tests docs README.md tsconfig.json vitest.config.ts templates/workflows templates/actions runtime/supervisor.mjs",
+    "format:check": "prettier --check src tests docs README.md tsconfig.json vitest.config.ts templates/workflows templates/actions runtime/supervisor.mjs"
   },
   "dependencies": {
     "@actions/artifact": "6.2.1",
